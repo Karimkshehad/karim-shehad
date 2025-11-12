@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>منصة كريم شهاد للذكاء الاصطناعي والفن القبطي</title>
+<style>
+:root{
+ --gold:#e6b400;
+ --violet:#7b61ff;
+ --dark:#0b0b0f;
+ --text:#f5f5f5;
+ --bg-main: radial-gradient(circle at 30% 30%,rgba(123,97,255,0.15),transparent 60%),
+            radial-gradient(circle at 70% 70%,rgba(230,180,0,0.2),transparent 60%),
+            var(--dark);
+ --input-bg: #1a1a1f;
+ --input-border: #444;
+ --result-bg: rgba(26, 26, 31, 0.5);
+ --result-border: #333;
+}
+body{
+ margin:0;
+ font-family:"Poppins","Cairo",sans-serif;
+ background: var(--bg-main);
+ background-size:200% 200%;
+ animation:moveLight 12s infinite alternate;
+ color:var(--text);
+ transition: background 0.5s, color 0.5s;
+}
+@keyframes moveLight{
+ 0%{background-position:0 0,100% 100%,center;}
+ 100%{background-position:100% 0,0 100%,center;}
+}
+header{
+ text-align:center;
+ padding:2rem 1rem;
+ background:linear-gradient(90deg,var(--violet),var(--gold));
+ box-shadow:0 0 20px rgba(212,175,55,0.5);
+}
+header h1{
+ margin:0;
+ font-size:2.5rem;
+ background:linear-gradient(90deg,var(--gold),#fff,var(--violet));
+ -webkit-background-clip:text;
+ -webkit-text-fill-color:transparent;
+ animation:shine 4s linear infinite;
+ font-weight:800;
+}
+@keyframes shine{
+ from{background-position:0%;}
+ to{background-position:200%;}
+}
+header p{
+ margin:.4rem 0 0;
+ color:#111;
+ font-weight:700;
+}
+nav{
+ display:flex;justify-content:center;flex-wrap:wrap;
+ background:#111;border-top:2px solid var(--gold);
+ border-bottom:2px solid var(--gold);
+ box-shadow:0 0 25px rgba(92,74,255,0.4);
+}
+nav button{
+ background:none;border:none;color:var(--text);
+ font-size:1rem;padding:1rem 1.2rem;
+ cursor:pointer;position:relative;transition:0.3s;
+ font-weight:600;letter-spacing:0.5px;
+}
+nav button::after{
+ content:"";position:absolute;left:0;bottom:0;width:0;height:3px;
+ background:var(--gold);transition:width 0.3s;
+}
+nav button:hover{color:var(--gold);text-shadow:0 0 8px var(--gold);}
+nav button:hover::after{width:100%;}
+nav button.active{color:var(--gold);text-shadow:0 0 10px var(--gold);}
+nav button.active::after{width:100%;}
+section{display:none;padding:2rem;max-width:1000px;margin:auto;}
+section.active{display:block;animation:fadeIn 0.8s;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+h2{color:var(--gold);text-align:center;font-size:1.8rem; margin-bottom: 1.5rem;}
+p { text-align: center; margin-bottom: 1rem; color: #ccc; }
+footer{text-align:center;padding:1rem;color:#aaa;border-top:1px solid #333;margin-top:1rem;}
+
+textarea, input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: var(--input-bg);
+    border: 2px solid var(--input-border);
+    border-radius: 8px;
+    padding: 0.8rem;
+    color: var(--text);
+    font-size: 1rem;
+    margin-top: 1rem;
+    font-family: inherit;
+    transition: border-color 0.3s, background-color 0.5s;
+    resize: vertical;
+    min-height: 80px;
+}
+textarea:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: var(--violet);
+}
+button.action {
+    background: linear-gradient(90deg, var(--violet), var(--gold));
+    color: #0b0b0f;
+    font-weight: bold;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+    font-size: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: inline-block;
+    width: auto;
+}
+button.action:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(230, 180, 0, 0.4);
+}
+button.action:disabled {
+    background: #555;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    color: #999;
+}
+.result-container {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: var(--result-bg);
+    border-radius: 8px;
+    border: 1px solid var(--result-border);
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    line-height: 1.7;
+    transition: background-color 0.5s, border-color 0.5s;
+}
+.result-container img, .result-container video {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+.result-container pre {
+    background: #111;
+    color: var(--text);
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: right;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: "Cairo", monospace;
+    width: 100%;
+    box-sizing: border-box;
+}
+[dir="ltr"] .result-container pre, [dir="ltr"] .result-container blockquote { text-align: left; }
+.result-container blockquote {
+    border-right: 4px solid var(--gold);
+    padding-right: 1rem;
+    margin: 1rem 0;
+    text-align: right;
+}
+.result-container .sources {
+    margin-top: 1.5rem;
+    text-align: right;
+    font-size: 0.9rem;
+    width: 100%;
+}
+.result-container .sources h4 {
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+}
+.result-container .sources a {
+    color: var(--violet);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+.result-container .sources a:hover {
+    text-decoration: underline;
+}
+
+.controls {
+    text-align: center;
+    padding: 0.5rem 1rem;
+    background: #000;
+}
+.control-btn {
+    background: #222;
+    color: #eee;
+    border: 1px solid #444;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    margin: 0 0.5rem;
+    transition: background 0.3s;
+}
+.control-btn:hover {
+    background: #333;
+}
+/* Pharaonic Mode */
+body.pharaonic-mode {
+    --gold: #b98900;
+    --violet: #8c79de;
+    --dark: #f0e5c2;
+    --text: #2b1b07;
+    --bg-main: url('https://upload.wikimedia.org/wikipedia/commons/1/1c/Papyrus_Ebers_1.jpg');
+    --input-bg: rgba(240, 229, 194, 0.8);
+    --input-border: #b98900;
+    --result-bg: rgba(240, 229, 194, 0.7);
+    --result-border: #b98900;
+    font-family: "Cairo", sans-serif;
+    background-size: cover;
+    background-attachment: fixed;
+    animation: none;
+}
+.pharaonic-mode header h1 {
+    background: none;
+    -webkit-text-fill-color: #2b1b07;
+    text-shadow: 0 0 10px #fff;
+}
+.listen-btn {
+    background: #222;
+    color: #eee;
+    border: 1px solid #444;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.3s;
+}
+.listen-btn:hover:not(:disabled) {
+    background: #333;
+}
+.listen-btn:disabled {
+    background: #555;
+    cursor: not-allowed;
+    color: #999;
+}
+.audio-status {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    color: #aaa;
+}
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.0",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+</head>
+<body>
+
+<header>
+  <h1 data-translate-key="main_title">منصة كريم شهاد للذكاء الاصطناعي والفن القبطي</h1>
+  <p>Karim Shehad Art / Global AI — Vision & Color Intelligence™</p>
+</header>
+
+<nav>
+  <button class="tab active" data-target="home" data-translate-key="nav_home">🏛️ الرئيسية</button>
+  <button class="tab" data-target="images" data-translate-key="nav_images">🎨 استوديو الصور</button>
+  <button class="tab" data-target="coptic" data-translate-key="nav_coptic">✝️ الفن القبطي</button>
+  <button class="tab" data-target="video" data-translate-key="nav_video">🎬 الفيديو</button>
+  <button class="tab" data-target="hymn" data-translate-key="nav_hymn">🎵 الترانيم</button>
+  <button class="tab" data-target="script" data-translate-key="nav_script">🎭 السيناريو</button>
+  <button class="tab" data-target="knowledge" data-translate-key="nav_knowledge">📚 المعرفة</button>
+  <button class="tab" data-target="about" data-translate-key="nav_about">🌍 عن المنصة</button>
+</nav>
+
+<div class="controls">
+    <button id="langBtn" class="control-btn" data-translate-key="lang_btn">English</button>
+    <button id="modeBtn" class="control-btn" data-translate-key="mode_btn">🏺 الوضع الفرعوني</button>
+</div>
+
+<main>
+    <section id="home" class="active">
+      <h2 data-translate-key="home_title">🏛️ الرئيسية</h2>
+      <p style="font-size:1.1rem;line-height:1.8;" data-translate-key="home_p">
+        مرحبًا بك في <b>منصة كريم شهاد</b>، تجربة فنية تجمع بين
+        <span style="color:var(--gold)">الذكاء الاصطناعي</span> وجمال الفن القبطي والتراث المصري في واجهة عالمية.
+      </p>
+    </section>
+
+    <section id="images">
+      <h2 data-translate-key="images_title">🎨 استوديو الصور</h2>
+      <p data-translate-key="images_p">اكتب وصفاً دقيقاً للصورة التي تريد توليدها بالذكاء الاصطناعي.</p>
+      <textarea id="prompt" data-translate-key="images_placeholder" placeholder="مثال: صورة فوتوغرافية لفرعون مصري مهيب يجلس على عرش من الذهب الخالص، الضوء الذهبي يتدفق من النافذة..."></textarea>
+      <button class="action" id="generateImageBtn" data-translate-key="generate_image_btn">⚡ توليد الصورة</button>
+      <div id="imgResult" class="result-container"><p data-translate-key="images_result">سيتم عرض الصورة المولدة هنا.</p></div>
+    </section>
+
+    <section id="coptic">
+      <h2 data-translate-key="coptic_title">✝️ استوديو الفن القبطي</h2>
+      <p data-translate-key="coptic_p">اكتب وصف الأيقونة أو المشهد القبطي الذي تريد توليده بأسلوب فني أصيل.</p>
+      <textarea id="copticPrompt" data-translate-key="coptic_placeholder" placeholder="مثال: أيقونة قبطية للقديس مارمرقس الرسول، بملامح روحانية وخلفية من أوراق الذهب..."></textarea>
+      <button class="action" id="generateCopticBtn" data-translate-key="generate_coptic_btn">🕊️ توليد الأيقونة</button>
+      <div id="copticOut" class="result-container"><p data-translate-key="coptic_result">سيتم عرض الأيقونة المولدة هنا.</p></div>
+    </section>
+
+    <section id="video">
+        <h2 data-translate-key="video_title">🎬 استوديو الفيديو</h2>
+        <div id="videoContainer" class="result-container" style="min-height: 250px;"></div>
+    </section>
+    
+    <section id="hymn">
+      <h2 data-translate-key="hymn_title">🎵 قسم الترانيم</h2>
+      <p data-translate-key="hymn_p">اكتب كلمات الترانيمة لتحويلها إلى لوحة قصصية (Storyboard) من ثلاثة مشاهد.</p>
+      <textarea id="hymnText" data-translate-key="hymn_placeholder" placeholder="مثال: يارب، بارك هذا اليوم واجعله مليئًا بنورك..."></textarea>
+      <button class="action" id="generateHymnBtn" data-translate-key="hymn_storyboard_btn">🎶 إنشاء Storyboard</button>
+      <div id="hymnOut" class="result-container"><p data-translate-key="hymn_result">سيتم عرض الـ Storyboard هنا.</p></div>
+    </section>
+
+    <section id="script">
+      <h2 data-translate-key="script_title">🎭 قسم السيناريو / Storyboard</h2>
+      <p data-translate-key="script_p">اكتب فكرة المشهد أو الحوار ليقوم الذكاء الاصطناعي بتحويلها إلى سيناريو قصير.</p>
+      <textarea id="scriptText" data-translate-key="script_placeholder" placeholder="مثال: بطل يسير ببطء داخل معبد قديم، حاملاً شعلة تضيء النقوش الهيروغليفية على الجدران..."></textarea>
+      <button class="action" id="generateScriptBtn" data-translate-key="generate_script_btn">📝 إنشاء السيناريو</button>
+      <div id="scriptOut" class="result-container"><p data-translate-key="script_result">سيتم عرض السيناريو هنا.</p></div>
+    </section>
+    
+    <section id="knowledge">
+      <h2 data-translate-key="knowledge_title">📚 قاعدة المعرفة المسيحية القبطية</h2>
+      <p data-translate-key="knowledge_p">ابحث عن اسم البابا أو القديس أو أي مصطلح كنسي لمعرفة المزيد من المعلومات.</p>
+      <input type="text" id="searchSaint" data-translate-key="knowledge_placeholder" placeholder="مثال: البابا كيرلس السادس">
+      <button class="action" id="searchKnowledgeBtn" data-translate-key="search_btn">🔍 بحث</button>
+      <div id="infoResult" class="result-container"><p data-translate-key="knowledge_result">سيتم عرض نتائج البحث هنا.</p></div>
+    </section>
+
+    <section id="about">
+      <h2 data-translate-key="about_title">🌍 عن المنصة</h2>
+      <p data-translate-key="about_p">منصة تجمع بين التقنيات الحديثة والإبداع الفني، برؤية عالمية وعمق مصري أصيل.</p>
+    </section>
+</main>
+
+<footer>© 2025 منصة كريم شهاد — Vision & Color Intelligence™</footer>
+
+<audio id="clickSound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_4d06f8f3a1.mp3"></audio>
+<audio id="pharaonicMusic" loop src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_f42e3f74c0.mp3"></audio>
+
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
