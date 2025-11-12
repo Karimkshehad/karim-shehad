@@ -1,4 +1,4 @@
-import { GoogleGenAI, Modality } from "@google/genai";
+import { GoogleGenAI, Modality, LiveServerMessage, Blob } from "@google/genai";
 
 // FIX: Corrected the global declaration for window.aistudio to use a named interface `AIStudio`, resolving a type conflict.
 declare global {
@@ -14,7 +14,6 @@ declare global {
 
 // --- STATE & CONFIG ---
 let currentLang = "ar";
-let currentMode = "global";
 
 const translations = {
     ar: {
@@ -26,9 +25,9 @@ const translations = {
         nav_hymn: "🎵 الترانيم",
         nav_script: "🎭 السيناريو",
         nav_knowledge: "📚 المعرفة",
+        nav_live: "🎙️ صوت حي",
         nav_about: "🌍 عن المنصة",
         lang_btn: "English",
-        mode_btn: "🏺 الوضع الفرعوني",
         home_title: "🏛️ الرئيسية",
         home_p: "مرحبًا بك في <b>منصة كريم شهاد</b>، تجربة فنية تجمع بين <span style='color:var(--gold)'>الذكاء الاصطناعي</span> وجمال الفن القبطي والتراث المصري في واجهة عالمية.",
         images_title: "🎨 استوديو الصور",
@@ -36,6 +35,7 @@ const translations = {
         images_placeholder: "مثال: صورة فوتوغرافية لفرعون مصري مهيب يجلس على عرش من الذهب الخالص، الضوء الذهبي يتدفق من النافذة...",
         generate_image_btn: "⚡ توليد الصورة",
         images_result: "سيتم عرض الصورة المولدة هنا.",
+        image_size_label: "حجم الصورة:",
         coptic_title: "✝️ استوديو الفن القبطي",
         coptic_p: "اكتب وصف الأيقونة أو المشهد القبطي الذي تريد توليده بأسلوب فني أصيل.",
         coptic_placeholder: "مثال: أيقونة قبطية للقديس مارمرقس الرسول، بملامح روحانية وخلفية من أوراق الذهب...",
@@ -59,11 +59,19 @@ const translations = {
         knowledge_result: "سيتم عرض نتائج البحث هنا.",
         about_title: "🌍 عن المنصة",
         about_p: "منصة تجمع بين التقنيات الحديثة والإبداع الفني، برؤية عالمية وعمق مصري أصيل.",
-        pharaonic_mode_on: "🌍 الوضع العالمي",
         listen_btn: "🔊 استمع",
         listen_loading_btn: "جارٍ التحميل...",
         generating_audio: "🎤 جارٍ توليد الصوت...",
-        audio_error: "حدث خطأ أثناء توليد الصوت."
+        audio_error: "حدث خطأ أثناء توليد الصوت.",
+        live_title: "🎙️ الاستوديو الصوتي المباشر",
+        live_p: "تحدث مباشرة مع الذكاء الاصطناعي واستمع إلى الردود الصوتية والنصية في الوقت الفعلي.",
+        live_start: "▶️ بدء الجلسة المباشرة",
+        live_stop: "⏹️ إيقاف الجلسة المباشرة",
+        live_connecting: "⏳ جاري الاتصال...",
+        status_disconnected: "الحالة: غير متصل",
+        status_connecting: "الحالة: جاري الاتصال...",
+        status_connected: "الحالة: متصل. يمكنك التحدث الآن...",
+        status_error: "الحالة: حدث خطأ",
     },
     en: {
         main_title: "Karim Shehad AI & Coptic Art Platform",
@@ -74,9 +82,9 @@ const translations = {
         nav_hymn: "🎵 Hymns",
         nav_script: "🎭 Screenplay",
         nav_knowledge: "📚 Knowledge",
+        nav_live: "🎙️ Live Voice",
         nav_about: "🌍 About",
         lang_btn: "العربية",
-        mode_btn: "🏺 Pharaonic Mode",
         home_title: "🏛️ Home",
         home_p: "Welcome to the <b>Karim Shehad Platform</b>, an artistic experience combining <span style='color:var(--gold)'>Artificial Intelligence</span> with the beauty of Coptic art and Egyptian heritage in a global interface.",
         images_title: "🎨 Image Studio",
@@ -84,6 +92,7 @@ const translations = {
         images_placeholder: "Example: A photographic portrait of a majestic Egyptian pharaoh on a throne of pure gold, with golden light streaming from a window...",
         generate_image_btn: "⚡ Generate Image",
         images_result: "The generated image will be displayed here.",
+        image_size_label: "Image Size:",
         coptic_title: "✝️ Coptic Art Studio",
         coptic_p: "Describe the Coptic icon or scene you want to generate in an authentic artistic style.",
         coptic_placeholder: "Example: A Coptic icon of Saint Mark the Apostle, with spiritual features and a gold leaf background...",
@@ -107,11 +116,19 @@ const translations = {
         knowledge_result: "Search results will be displayed here.",
         about_title: "🌍 About the Platform",
         about_p: "A platform that combines modern technologies and artistic creativity, with a global vision and authentic Egyptian depth.",
-        pharaonic_mode_on: "🌍 Global Mode",
         listen_btn: "🔊 Listen",
         listen_loading_btn: "Loading...",
         generating_audio: "🎤 Generating audio...",
-        audio_error: "An error occurred while generating audio."
+        audio_error: "An error occurred while generating audio.",
+        live_title: "🎙️ Live Audio Studio",
+        live_p: "Speak directly with the AI and listen to audio responses and see transcripts in real-time.",
+        live_start: "▶️ Start Live Session",
+        live_stop: "⏹️ Stop Live Session",
+        live_connecting: "⏳ Connecting...",
+        status_disconnected: "Status: Disconnected",
+        status_connecting: "Status: Connecting...",
+        status_connected: "Status: Connected. You can speak now...",
+        status_error: "Status: Error",
     }
 };
 
@@ -150,6 +167,15 @@ function decode(base64: string): Uint8Array {
     bytes[i] = binaryString.charCodeAt(i);
   }
   return bytes;
+}
+
+function encode(bytes: Uint8Array) {
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
 
 async function decodeAudioData(
@@ -281,34 +307,25 @@ const toggleLang = () => {
     });
 };
 
-const toggleMode = () => {
-    const music = document.getElementById("pharaonicMusic") as HTMLAudioElement;
-    const modeBtn = document.getElementById("modeBtn") as HTMLButtonElement;
-    document.body.classList.toggle('pharaonic-mode');
-
-    if (document.body.classList.contains('pharaonic-mode')) {
-        currentMode = "pharaonic";
-        music.play().catch(e => console.error("Music play failed:", e));
-        modeBtn.textContent = translations[currentLang]['pharaonic_mode_on'];
-    } else {
-        currentMode = "global";
-        music.pause();
-        music.currentTime = 0;
-        modeBtn.textContent = translations[currentLang]['mode_btn'];
-    }
-}
-
-
 // --- IMAGE GENERATION ---
-const generateImage = async (promptElId: string, resultElId: string, extraPrompt: string = '') => {
+const generateImage = async (promptElId: string, resultElId: string, extraPrompt: string = '', ratioElId: string | null = null) => {
     const promptInput = document.getElementById(promptElId) as HTMLTextAreaElement;
     const resultContainer = document.getElementById(resultElId) as HTMLDivElement;
-    const button = resultContainer.previousElementSibling as HTMLButtonElement;
+    // This might be brittle if the button isn't the direct previous sibling
+    const button = document.getElementById(resultElId)?.previousElementSibling as HTMLButtonElement;
     const prompt = promptInput.value.trim();
 
     if (!prompt) {
         alert(currentLang === 'ar' ? "الرجاء كتابة وصف أولاً." : "Please write a description first.");
         return;
+    }
+
+    let aspectRatio: "1:1" | "16:9" | "9:16" | "4:3" | "3:4" = '1:1'; // Default, especially for Coptic icons
+    if (ratioElId) {
+        const ratioSelect = document.getElementById(ratioElId) as HTMLSelectElement;
+        if (ratioSelect) {
+            aspectRatio = ratioSelect.value as "1:1" | "16:9" | "9:16" | "4:3" | "3:4";
+        }
     }
 
     button.disabled = true;
@@ -322,7 +339,7 @@ const generateImage = async (promptElId: string, resultElId: string, extraPrompt
             config: {
                 numberOfImages: 1,
                 outputMimeType: 'image/jpeg',
-                aspectRatio: '16:9',
+                aspectRatio: aspectRatio,
             },
         });
 
@@ -333,7 +350,7 @@ const generateImage = async (promptElId: string, resultElId: string, extraPrompt
         console.error("Image generation error:", error);
         showError(resultContainer, currentLang === 'ar' ? "حدث خطأ أثناء توليد الصورة. الرجاء المحاولة مرة أخرى." : "An error occurred while generating the image. Please try again.");
     } finally {
-        button.disabled = false;
+        if(button) button.disabled = false;
     }
 };
 
@@ -555,11 +572,189 @@ const searchKnowledgeBase = async () => {
     }
 };
 
+// --- LIVE VOICE SECTION ---
+let liveSession: any = null;
+let inputAudioContext: AudioContext | null = null;
+let mediaStream: MediaStream | null = null;
+let scriptProcessor: ScriptProcessorNode | null = null;
+let mediaStreamSource: MediaStreamAudioSourceNode | null = null;
+let nextStartTime = 0;
+const sources = new Set<AudioBufferSourceNode>();
+let currentInputTranscription = '';
+let currentOutputTranscription = '';
+
+const liveBtn = document.getElementById('liveBtn') as HTMLButtonElement;
+const liveStatus = document.getElementById('liveStatus') as HTMLParagraphElement;
+const transcriptionDisplay = document.getElementById('transcriptionDisplay') as HTMLDivElement;
+
+const setLiveStatus = (key: string, color: string = '#ccc') => {
+    liveStatus.textContent = translations[currentLang][key];
+    liveStatus.style.color = color;
+};
+
+const updateOrCreateBubble = (speaker: 'user' | 'model', text: string) => {
+    const display = transcriptionDisplay;
+    const lastBubble = display.lastElementChild as HTMLElement;
+
+    if (lastBubble && lastBubble.dataset.speaker === speaker && lastBubble.dataset.final !== 'true') {
+        lastBubble.textContent = text;
+    } else {
+        if(lastBubble) lastBubble.dataset.final = 'true';
+        const newBubble = document.createElement('div');
+        newBubble.className = `transcription-bubble ${speaker}-bubble`;
+        newBubble.textContent = text;
+        newBubble.dataset.speaker = speaker;
+        display.appendChild(newBubble);
+    }
+    display.scrollTop = display.scrollHeight;
+};
+
+const stopLiveSession = () => {
+    if (liveSession) {
+        liveSession.close();
+        liveSession = null;
+    }
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+    }
+    if(scriptProcessor) {
+        scriptProcessor.disconnect();
+        scriptProcessor = null;
+    }
+    if(mediaStreamSource) {
+        mediaStreamSource.disconnect();
+        mediaStreamSource = null;
+    }
+    if(inputAudioContext && inputAudioContext.state !== 'closed') {
+        inputAudioContext.close();
+        inputAudioContext = null;
+    }
+    liveBtn.disabled = false;
+    liveBtn.textContent = translations[currentLang]['live_start'];
+    setLiveStatus('status_disconnected', '#ccc');
+};
+
+const startLiveSession = async () => {
+    liveBtn.disabled = true;
+    liveBtn.textContent = translations[currentLang]['live_connecting'];
+    setLiveStatus('status_connecting', 'orange');
+    transcriptionDisplay.innerHTML = '';
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaStream = stream;
+
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+        
+        const sessionPromise = ai.live.connect({
+            model: 'gemini-2.5-flash-native-audio-preview-09-2025',
+            callbacks: {
+                // FIX: Replaced the incorrect `sessionPromise.unwrap()` with the correct `.then()` pattern.
+                // All session-dependent logic is now safely inside the promise resolution handler.
+                onopen: () => {
+                    sessionPromise.then((session) => {
+                        liveSession = session;
+                        liveBtn.disabled = false;
+                        liveBtn.textContent = translations[currentLang]['live_stop'];
+                        setLiveStatus('status_connected', 'lightgreen');
+                        
+                        inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
+                        mediaStreamSource = inputAudioContext.createMediaStreamSource(stream);
+                        scriptProcessor = inputAudioContext.createScriptProcessor(4096, 1, 1);
+                        
+                        scriptProcessor.onaudioprocess = (audioProcessingEvent) => {
+                            const inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
+                            const pcmBlob = createBlob(inputData);
+                            session.sendRealtimeInput({ media: pcmBlob });
+                        };
+                        
+                        mediaStreamSource.connect(scriptProcessor);
+                        scriptProcessor.connect(inputAudioContext.destination);
+                    });
+                },
+                onmessage: async (message: LiveServerMessage) => {
+                    if (message.serverContent?.outputTranscription) {
+                        currentOutputTranscription += message.serverContent.outputTranscription.text;
+                        updateOrCreateBubble('model', currentOutputTranscription);
+                    } else if (message.serverContent?.inputTranscription) {
+                        currentInputTranscription += message.serverContent.inputTranscription.text;
+                        updateOrCreateBubble('user', currentInputTranscription);
+                    }
+                    if (message.serverContent?.turnComplete) {
+                        if(currentInputTranscription) (transcriptionDisplay.lastElementChild as HTMLElement).dataset.final = 'true';
+                        if(currentOutputTranscription) (transcriptionDisplay.lastElementChild as HTMLElement).dataset.final = 'true';
+                        currentInputTranscription = '';
+                        currentOutputTranscription = '';
+                    }
+
+                    const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
+                    if (base64Audio) {
+                        const audioContext = getAudioContext();
+                        nextStartTime = Math.max(nextStartTime, audioContext.currentTime);
+                        const audioBuffer = await decodeAudioData(decode(base64Audio), audioContext, 24000, 1);
+                        const source = audioContext.createBufferSource();
+                        source.buffer = audioBuffer;
+                        source.connect(audioContext.destination);
+                        source.addEventListener('ended', () => { sources.delete(source); });
+                        source.start(nextStartTime);
+                        nextStartTime = nextStartTime + audioBuffer.duration;
+                        sources.add(source);
+                    }
+
+                    if (message.serverContent?.interrupted) {
+                        for (const source of sources.values()) {
+                            source.stop();
+                            sources.delete(source);
+                        }
+                        nextStartTime = 0;
+                    }
+                },
+                onerror: (e: ErrorEvent) => {
+                    console.error("Live session error:", e);
+                    setLiveStatus('status_error', '#ff7b7b');
+                    stopLiveSession();
+                },
+                onclose: (e: CloseEvent) => {
+                    stopLiveSession();
+                },
+            },
+            config: {
+                responseModalities: [Modality.AUDIO],
+                outputAudioTranscription: {},
+                inputAudioTranscription: {},
+                speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } } },
+            },
+        });
+    } catch (error) {
+        console.error("Failed to start live session:", error);
+        alert(currentLang === 'ar' ? 'لم نتمكن من الوصول إلى الميكروفون.' : 'Could not access the microphone.');
+        stopLiveSession();
+    }
+};
+
+function createBlob(data: Float32Array): Blob {
+  const l = data.length;
+  const int16 = new Int16Array(l);
+  for (let i = 0; i < l; i++) {
+    int16[i] = data[i] * 32768;
+  }
+  return {
+    data: encode(new Uint8Array(int16.buffer)),
+    mimeType: 'audio/pcm;rate=16000',
+  };
+}
+
 // --- TAB NAVIGATION ---
 document.querySelectorAll(".tab").forEach(btn => {
     btn.addEventListener('click', () => {
         const targetId = (btn as HTMLElement).dataset.target;
         if (!targetId) return;
+
+        // Stop live session if navigating away
+        if (liveSession && targetId !== 'live') {
+            stopLiveSession();
+        }
 
         document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
         document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
@@ -582,13 +777,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('langBtn')?.addEventListener('click', toggleLang);
-    document.getElementById('modeBtn')?.addEventListener('click', toggleMode);
 
-    document.getElementById('generateImageBtn')?.addEventListener('click', () => generateImage('prompt', 'imgResult'));
+    document.getElementById('generateImageBtn')?.addEventListener('click', () => generateImage('prompt', 'imgResult', '', 'imageRatio'));
     document.getElementById('generateCopticBtn')?.addEventListener('click', () => generateImage('copticPrompt', 'copticOut', 'Coptic icon in the traditional orthodox style, with golden leaf background, of'));
     document.getElementById('generateHymnBtn')?.addEventListener('click', () => generateTextContent('hymnText', 'hymnOut', 'You are a creative director. Based on these hymn lyrics, describe a 3-panel visual storyboard. For each panel, provide a title and a detailed visual description of the scene. Format it clearly.'));
     document.getElementById('generateScriptBtn')?.addEventListener('click', () => generateTextContent('scriptText', 'scriptOut', 'You are a screenwriter. Take the following scene idea and write it as a short screenplay scene. Include a scene heading (INT./EXT.), action lines, and dialogue if applicable. Format it professionally.'));
     document.getElementById('searchKnowledgeBtn')?.addEventListener('click', searchKnowledgeBase);
+    
+    liveBtn.addEventListener('click', () => {
+        if (liveSession) {
+            stopLiveSession();
+        } else {
+            startLiveSession();
+        }
+    });
 
     // Initial setup for the video section if it's the default active tab
     if(document.querySelector('#video.active')) {

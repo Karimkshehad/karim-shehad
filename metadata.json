@@ -1,5 +1,7 @@
 {
-  "name": "منصة كريم شهاد للذكاء الاصطناعي والفن القبطي",
+  "name": "Copy of Copy of Copy of Copy of منصة كريم شهاد للذكاء الاصطناعي والفن القبطي",
   "description": "An artistic platform by Karim Shehad that combines Artificial Intelligence with the beauty of Coptic art and Egyptian heritage in a global interface, featuring Vision & Color Intelligence™.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "microphone"
+  ]
 }
